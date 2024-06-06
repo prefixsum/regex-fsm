@@ -94,3 +94,84 @@ impl Token {
         }
     }
 }
+
+#[cfg(test)]
+#[test]
+fn test_concatenator() {
+    assert_eq!(
+        Token::new("abc"),
+        Token::Concatenator(
+            Box::new(Token::Concatenator(
+                Box::new(Token::Literal('a')),
+                Box::new(Token::Literal('b'))
+            )),
+            Box::new(Token::Literal('c'))
+        )
+    )
+}
+
+#[test]
+fn test_alternator() {
+    assert_eq!(
+        Token::new("a|b"),
+        Token::Alternator(Box::new(Token::Literal('a')), Box::new(Token::Literal('b')))
+    )
+}
+
+#[test]
+fn test_star() {
+    assert_eq!(
+        Token::new("a*b"),
+        Token::Concatenator(
+            Box::new(Token::Star(Box::new(Token::Literal('a')))),
+            Box::new(Token::Literal('b'))
+        )
+    )
+}
+
+#[test]
+fn test_plus() {
+    assert_eq!(
+        Token::new("a+b"),
+        Token::Concatenator(
+            Box::new(Token::Plus(Box::new(Token::Literal('a')))),
+            Box::new(Token::Literal('b'))
+        )
+    )
+}
+
+#[test]
+fn test_group() {
+    assert_eq!(
+        Token::new("(ab)+(cd)"),
+        Token::Concatenator(
+            Box::new(Token::Plus(Box::new(Token::Concatenator(
+                Box::new(Token::Literal('a')),
+                Box::new(Token::Literal('b')),
+            )))),
+            Box::new(Token::Concatenator(
+                Box::new(Token::Literal('c')),
+                Box::new(Token::Literal('d')),
+            ))
+        )
+    )
+}
+
+#[test]
+fn test_nested_group() {
+    assert_eq!(
+        Token::new("((ab)+c))"),
+        Token::Concatenator(
+            Box::new(Token::Plus(Box::new(Token::Concatenator(
+                Box::new(Token::Literal('a')),
+                Box::new(Token::Literal('b')),
+            )))),
+            Box::new(Token::Literal('c')),
+        )
+    )
+}
+
+#[test]
+fn test_none() {
+    assert_eq!(Token::new(""), Token::None)
+}
