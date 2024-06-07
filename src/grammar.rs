@@ -59,3 +59,82 @@ pub enum Quantifier {
     ZeroOrMore,
     OneOrMore,
 }
+
+impl Expression {
+    pub fn new(expression: &str) -> Self {
+        let mut chars = expression.chars().peekable();
+        Self::parse_expression(&mut chars)
+    }
+
+    fn parse_expression(chars: &mut Peekable<Chars>) -> Self {
+        let term = Self::parse_term(chars);
+
+        if chars.peek() == Some(&'|') {
+            chars.next();
+            let expr = Self::parse_expression(chars);
+            Expression::Or(Box::new(term), Box::new(expr))
+        } else {
+            Expression::Term(Box::new(term))
+        }
+    }
+
+    fn parse_term(chars: &mut Peekable<Chars>) -> Term {
+        let factor = Self::parse_factor(chars);
+
+        if let Some(&next) = chars.peek() {
+            if next != '|' && next != ')' {
+                let term = Self::parse_term(chars);
+                return Term::Sequence(Box::new(factor), Box::new(term));
+            }
+        }
+        Term::Factor(Box::new(factor))
+    }
+
+    fn parse_factor(chars: &mut Peekable<Chars>) -> Factor {
+        let atom = Self::parse_atom(chars);
+
+        match chars.peek() {
+            Some(&'?') => {
+                chars.next();
+                Factor::Quantified(Box::new(atom), Box::new(Quantifier::ZeroOrOne))
+            }
+            Some(&'*') => {
+                chars.next();
+                Factor::Quantified(Box::new(atom), Box::new(Quantifier::ZeroOrMore))
+            }
+            Some(&'+') => {
+                chars.next();
+                Factor::Quantified(Box::new(atom), Box::new(Quantifier::OneOrMore))
+            }
+            _ => Factor::Atom(Box::new(atom)),
+        }
+    }
+
+    fn parse_atom(chars: &mut Peekable<Chars>) -> Atom {
+        match chars.next() {
+            Some('(') => {
+                let expr = Self::parse_expression(chars);
+                chars.next();
+                Atom::Expression(Box::new(expr))
+            }
+            Some('\\') => {
+                let escaped_char = chars.next().expect("Expected character after backslash");
+                Atom::Character(Box::new(Character::Escaped(escaped_char)))
+            }
+            Some('.') => Atom::Character(Box::new(Character::Any)),
+            Some(literal) => Atom::Character(Box::new(Character::Literal(literal))),
+            None => panic!("Unexpected end of input while parsing atom"),
+        }
+    }
+}
+
+#[cfg(test)]
+#[test]
+fn test_expression() {
+    assert_eq!(
+        Expression::new("a"),
+        Expression::Term(Box::new(Term::Factor(Box::new(Factor::Atom(Box::new(
+            Atom::Character(Box::new(Character::Literal('a')))
+        ))))))
+    )
+}
