@@ -138,3 +138,111 @@ fn test_expression() {
         ))))))
     )
 }
+
+#[test]
+fn test_escaped() {
+    assert_eq!(
+        Expression::new("\\*"),
+        Expression::Term(Box::new(Term::Factor(Box::new(Factor::Atom(Box::new(
+            Atom::Character(Box::new(Character::Escaped('*')))
+        ))))))
+    )
+}
+
+#[test]
+fn test_any() {
+    assert_eq!(
+        Expression::new("."),
+        Expression::Term(Box::new(Term::Factor(Box::new(Factor::Atom(Box::new(
+            Atom::Character(Box::new(Character::Any))
+        ))))))
+    )
+}
+
+#[test]
+fn test_sequence() {
+    assert_eq!(
+        Expression::new("ab"),
+        Expression::Term(Box::new(Term::Sequence(
+            Box::new(Factor::Atom(Box::new(Atom::Character(Box::new(
+                Character::Literal('a')
+            ))))),
+            Box::new(Term::Factor(Box::new(Factor::Atom(Box::new(
+                Atom::Character(Box::new(Character::Literal('b')))
+            )))))
+        )))
+    )
+}
+
+#[test]
+fn test_triple_sequence() {
+    assert_eq!(
+        Expression::new("abc"),
+        Expression::Term(Box::new(Term::Sequence(
+            Box::new(Factor::Atom(Box::new(Atom::Character(Box::new(
+                Character::Literal('a')
+            ))))),
+            Box::new(Term::Sequence(
+                Box::new(Factor::Atom(Box::new(Atom::Character(Box::new(
+                    Character::Literal('b')
+                ))))),
+                Box::new(Term::Factor(Box::new(Factor::Atom(Box::new(
+                    Atom::Character(Box::new(Character::Literal('c')))
+                )))))
+            ))
+        )))
+    )
+}
+
+#[test]
+fn test_quantifier() {
+    assert_eq!(
+        Expression::new("ab*c"),
+        Expression::Term(Box::new(Term::Sequence(
+            Box::new(Factor::Atom(Box::new(Atom::Character(Box::new(
+                Character::Literal('a')
+            ))))),
+            Box::new(Term::Sequence(
+                Box::new(Factor::Quantified(
+                    Box::new(Atom::Character(Box::new(Character::Literal('b')))),
+                    Box::new(Quantifier::ZeroOrMore)
+                )),
+                Box::new(Term::Factor(Box::new(Factor::Atom(Box::new(
+                    Atom::Character(Box::new(Character::Literal('c')))
+                )))))
+            ))
+        )))
+    )
+}
+
+#[test]
+fn test_disjunction() {
+    assert_eq!(
+        Expression::new("a|b"),
+        Expression::Or(
+            Box::new(Term::Factor(Box::new(Factor::Atom(Box::new(
+                Atom::Character(Box::new(Character::Literal('a')))
+            ))))),
+            Box::new(Expression::Term(Box::new(Term::Factor(Box::new(
+                Factor::Atom(Box::new(Atom::Character(Box::new(Character::Literal('b')))))
+            ))))),
+        )
+    )
+}
+
+#[test]
+fn test_group() {
+    assert_eq!(
+        Expression::new("(a)b"),
+        Expression::Term(Box::new(Term::Sequence(
+            Box::new(Factor::Atom(Box::new(Atom::Expression(Box::new(
+                Expression::Term(Box::new(Term::Factor(Box::new(Factor::Atom(Box::new(
+                    Atom::Character(Box::new(Character::Literal('a')))
+                ))))))
+            ))))),
+            Box::new(Term::Factor(Box::new(Factor::Atom(Box::new(
+                Atom::Character(Box::new(Character::Literal('b')))
+            )))))
+        )))
+    )
+}
