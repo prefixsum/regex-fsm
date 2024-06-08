@@ -38,7 +38,7 @@ pub enum Atom {
     /// The fundamental unit from which a regular expression is built.
     /// Either a single `Character`, or an `Expression` representing a group enclosed
     /// within parentheses in the expression.
-    Character(Box<Character>),
+    Character(Character),
     Expression(Box<Expression>),
 }
 
@@ -119,10 +119,10 @@ impl Expression {
             }
             Some('\\') => {
                 let escaped_char = chars.next().expect("Expected character after backslash");
-                Atom::Character(Box::new(Character::Escaped(escaped_char)))
+                Atom::Character(Character::Escaped(escaped_char))
             }
-            Some('.') => Atom::Character(Box::new(Character::Any)),
-            Some(literal) => Atom::Character(Box::new(Character::Literal(literal))),
+            Some('.') => Atom::Character(Character::Any),
+            Some(literal) => Atom::Character(Character::Literal(literal)),
             None => panic!("Unexpected end of input while parsing atom"),
         }
     }
@@ -134,7 +134,7 @@ fn test_expression() {
     assert_eq!(
         Expression::new("a"),
         Expression::Term(Box::new(Term::Factor(Box::new(Factor::Atom(Box::new(
-            Atom::Character(Box::new(Character::Literal('a')))
+            Atom::Character(Character::Literal('a'))
         ))))))
     )
 }
@@ -144,7 +144,7 @@ fn test_escaped() {
     assert_eq!(
         Expression::new("\\*"),
         Expression::Term(Box::new(Term::Factor(Box::new(Factor::Atom(Box::new(
-            Atom::Character(Box::new(Character::Escaped('*')))
+            Atom::Character(Character::Escaped('*'))
         ))))))
     )
 }
@@ -154,7 +154,7 @@ fn test_any() {
     assert_eq!(
         Expression::new("."),
         Expression::Term(Box::new(Term::Factor(Box::new(Factor::Atom(Box::new(
-            Atom::Character(Box::new(Character::Any))
+            Atom::Character(Character::Any)
         ))))))
     )
 }
@@ -164,11 +164,11 @@ fn test_sequence() {
     assert_eq!(
         Expression::new("ab"),
         Expression::Term(Box::new(Term::Sequence(
-            Box::new(Factor::Atom(Box::new(Atom::Character(Box::new(
-                Character::Literal('a')
+            Box::new(Factor::Atom(Box::new(Atom::Character(Character::Literal(
+                'a'
             ))))),
             Box::new(Term::Factor(Box::new(Factor::Atom(Box::new(
-                Atom::Character(Box::new(Character::Literal('b')))
+                Atom::Character(Character::Literal('b'))
             )))))
         )))
     )
@@ -179,15 +179,15 @@ fn test_triple_sequence() {
     assert_eq!(
         Expression::new("abc"),
         Expression::Term(Box::new(Term::Sequence(
-            Box::new(Factor::Atom(Box::new(Atom::Character(Box::new(
-                Character::Literal('a')
+            Box::new(Factor::Atom(Box::new(Atom::Character(Character::Literal(
+                'a'
             ))))),
             Box::new(Term::Sequence(
-                Box::new(Factor::Atom(Box::new(Atom::Character(Box::new(
-                    Character::Literal('b')
+                Box::new(Factor::Atom(Box::new(Atom::Character(Character::Literal(
+                    'b'
                 ))))),
                 Box::new(Term::Factor(Box::new(Factor::Atom(Box::new(
-                    Atom::Character(Box::new(Character::Literal('c')))
+                    Atom::Character(Character::Literal('c'))
                 )))))
             ))
         )))
@@ -199,16 +199,16 @@ fn test_quantifier() {
     assert_eq!(
         Expression::new("ab*c"),
         Expression::Term(Box::new(Term::Sequence(
-            Box::new(Factor::Atom(Box::new(Atom::Character(Box::new(
-                Character::Literal('a')
+            Box::new(Factor::Atom(Box::new(Atom::Character(Character::Literal(
+                'a'
             ))))),
             Box::new(Term::Sequence(
                 Box::new(Factor::Quantified(
-                    Box::new(Atom::Character(Box::new(Character::Literal('b')))),
+                    Box::new(Atom::Character(Character::Literal('b'))),
                     Box::new(Quantifier::ZeroOrMore)
                 )),
                 Box::new(Term::Factor(Box::new(Factor::Atom(Box::new(
-                    Atom::Character(Box::new(Character::Literal('c')))
+                    Atom::Character(Character::Literal('c'))
                 )))))
             ))
         )))
@@ -221,10 +221,10 @@ fn test_disjunction() {
         Expression::new("a|b"),
         Expression::Or(
             Box::new(Term::Factor(Box::new(Factor::Atom(Box::new(
-                Atom::Character(Box::new(Character::Literal('a')))
+                Atom::Character(Character::Literal('a'))
             ))))),
             Box::new(Expression::Term(Box::new(Term::Factor(Box::new(
-                Factor::Atom(Box::new(Atom::Character(Box::new(Character::Literal('b')))))
+                Factor::Atom(Box::new(Atom::Character(Character::Literal('b'))))
             ))))),
         )
     )
@@ -237,11 +237,11 @@ fn test_group() {
         Expression::Term(Box::new(Term::Sequence(
             Box::new(Factor::Atom(Box::new(Atom::Expression(Box::new(
                 Expression::Term(Box::new(Term::Factor(Box::new(Factor::Atom(Box::new(
-                    Atom::Character(Box::new(Character::Literal('a')))
+                    Atom::Character(Character::Literal('a'))
                 ))))))
             ))))),
             Box::new(Term::Factor(Box::new(Factor::Atom(Box::new(
-                Atom::Character(Box::new(Character::Literal('b')))
+                Atom::Character(Character::Literal('b'))
             )))))
         )))
     )
