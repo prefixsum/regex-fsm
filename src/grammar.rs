@@ -66,7 +66,7 @@ impl Expression {
         Self::parse_expression(&mut chars)
     }
 
-    fn parse_expression(chars: &mut Peekable<Chars>) -> Self {
+    fn parse_expression(chars: &mut Peekable<Chars>) -> Expression {
         let term = Self::parse_term(chars);
 
         if chars.peek() == Some(&'|') {
