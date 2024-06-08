@@ -5,7 +5,7 @@
 /// <Term>       ::= <Factor> | <Factor><Term>
 /// <Factor>     ::= <Atom> | <Atom><Quantifier>
 /// <Atom>       ::= <Character> | '('<Expression>')'
-/// <Character>  ::= <Literal> | '\'<Literal> | '.'
+/// <Character>  ::= <char> | '\'<char> | '.'
 /// <Quantifier> ::= '?' | '*' | '+'
 use std::iter::Peekable;
 use std::str::Chars;
