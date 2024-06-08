@@ -71,8 +71,8 @@ impl Expression {
 
         if chars.peek() == Some(&'|') {
             chars.next();
-            let expr = Self::parse_expression(chars);
-            Expression::Or(Box::new(term), Box::new(expr))
+            let expression = Self::parse_expression(chars);
+            Expression::Or(Box::new(term), Box::new(expression))
         } else {
             Expression::Term(Box::new(term))
         }
@@ -113,9 +113,9 @@ impl Expression {
     fn parse_atom(chars: &mut Peekable<Chars>) -> Atom {
         match chars.next() {
             Some('(') => {
-                let expr = Self::parse_expression(chars);
+                let expression = Self::parse_expression(chars);
                 chars.next();
-                Atom::Expression(Box::new(expr))
+                Atom::Expression(Box::new(expression))
             }
             Some('\\') => {
                 let escaped_char = chars.next().expect("Expected character after backslash");
